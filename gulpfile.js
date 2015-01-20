@@ -168,7 +168,7 @@ gulp.task('images', function(){
 		// now we are in each folder!
 		return gulp.src( inputFolder )
 			.pipe( newer( outputFolder ) )
-			//.pipe( imagemin( config.images ) )
+			.pipe( imagemin( config.images ) )
 			//.pipe( pngquant({optimizationLevel: 3})() )
 			//.pipe( jpegoptim({ size:MAX_SIZE_JPEG })() )
 			.pipe( gulp.dest( outputFolder ) );

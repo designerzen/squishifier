@@ -1,16 +1,16 @@
 #squishifier#
 **A script for the lazy** to **optimise**, **minify**, **remove redundancies** and **compress** any small static web project. 
 
-By simply **copying your source folder into the 'input' folder** and running the script will create a second project folder **'output' along with a zip** - ready to deploy to your server!
+By simply **copying your source folder into the 'input' folder** and running the script will create a second project folder **'output' _along with a zip_** - ready to deploy to your server!
 
 
 ##Installation##
 * Clone this repo, or [download the zip from github](https://github.com/designerzen/squishifier/archive/master.zip)
-* Install [NodeJS from nodejs.org](http://nodejs.org/)
+* Install [NodeJS from nodejs.org](http://nodejs.org/) if you have not done so already
 * Open a Command Line / Dos Prompt in the root of this folder
-* At the prompt type : npm install
-* Wait patiently
-* Now follow the options below to build your platform
+* At the prompt type : **npm install**
+* _Wait patiently_
+* Now follow the options below to optimise your application
 
 
 ##Instructions##
@@ -44,16 +44,24 @@ output/webproject.zip
 ```
 
 ##Advanced##
-There are a number of tasks that can help you to build faster
+There are a number of indivual tasks that can help you to test compile faster.
+NB. These are all run if you run just gulp on its own.
 
+**Minifies, Uglifies and Squishes Javascript**
 > gulp scripts
 
+**Minifies, Optimises, Prefixes and removes redundant rules from CSS**
 > gulp css
 
+**Minifies html**
 > gulp html
 
+**Copies fonts**
 > gulp fonts
 
+**Copies images and compresses them accepts: jpg, png, gif,svg and webm**
 > gulp images
 
+**Creates a zip file of the folder's contents**
+_**NB.** Does NOT contain the root folder_
 > gulp zip

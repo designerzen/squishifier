@@ -1,20 +1,28 @@
 /*
 
-This handles the compilation of the source elements :
+This handles the compilation of these elements :
 
 1. Read INPUT dir and fetch SOURCE folders
 2. Recreate folder structures in OUTPUT
 3. Minify, Uglify JS and copy to OUTPUT
 4. Squish Images (png, jpeg, gif, webm, svg) to OUTPUT
 5. Remove redundant CSS rules and minify to OUTPUT
-6. 
+6. Copy Fonts
+7. Zip up build
 
-For help with Globbing Patterns (the defaults should be fine!) check out :
-http://gruntjs.com/configuring-tasks#globbing-patterns
+
+
+All Available Tasks :
+	
+	scripts
+	css
+	html
+	fonts
+	images
+	
+	zip
 
 */
-
-// =======================---------------- CONFIGURATION --------------------
 
 var SOURCE_FOLDER 			= 'input/';			// Where the Source folder lives
 var BUILD_FOLDER 			= 'output/';		// Where the build results
@@ -99,10 +107,12 @@ var sequencer = require('run-sequence');		// run synchronously
 var console = require('better-console');		// sexy console output
 var merge = require('merge-stream');			// combine multiple streams!
 
-var folders = getFolders( SOURCE_FOLDER );
-	
+
 // Where shall we compile them to?
+var folders = getFolders( SOURCE_FOLDER );
 var destination = getDestinations( BUILD_FOLDER );
+
+
 
 // Create build folder if it does not exist...
 if(!fs.existsSync( BUILD_FOLDER ))
@@ -110,14 +120,16 @@ if(!fs.existsSync( BUILD_FOLDER ))
     fs.mkdirSync( BUILD_FOLDER, 0766, function(err){
 		if(err)
 		{ 
-			console.log(err);
+			console.error(err);
 			response.send("ERROR! Can't make the directory! \n");    // echo the result back
 		}
     });   
 }
 console.log( 'Reading ' + folders.length + ' Folders : ' + folders );
 	
+
 // =======================---------------- TASK DEFINITIONS --------------------
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 //
@@ -132,7 +144,6 @@ gulp.task('clean', function(cb) {
 });
 
 
-// Image Tasks ====================================================================
 ///////////////////////////////////////////////////////////////////////////////////
 //
 // TASK 	: Images
@@ -163,16 +174,13 @@ gulp.task('images', function(){
 	return es.concat.apply(null, streams);
 });
 
-// Cascading Style Sheets =========================================================
+
 ///////////////////////////////////////////////////////////////////////////////////
 //
 // TASK 	: CSS
 // ACTION 	: Compiles a single Less files specified into a single CSS file
-//
-//.pipe( newer( destination.styles ) )
 //		
 ///////////////////////////////////////////////////////////////////////////////////
-
 gulp.task('css', function(){
 	// CSS Plugins
 	var prefixer = require('gulp-autoprefixer');    // add missing browser prefixes
@@ -200,7 +208,6 @@ gulp.task('css', function(){
 });
 
 
-// Copy Files =====================================================================
 ///////////////////////////////////////////////////////////////////////////////////
 //
 // TASK 	: Copy Fonts
@@ -223,11 +230,11 @@ gulp.task('fonts', function(){
 	return es.concat.apply(null, streams);
 });
 
-// Scripts ========================================================================
+
 ///////////////////////////////////////////////////////////////////////////////////
 //
 // TASK 	: Scripts
-// ACTION 	: Compress and concantenate our Javascript files into one file
+// ACTION 	: Compress, optimise and uglifies our Javascript files
 //
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('scripts', function(){
@@ -253,13 +260,13 @@ gulp.task('scripts', function(){
 	return es.concat.apply(null, streams);
 });
 
+
 ///////////////////////////////////////////////////////////////////////////////////
 //
 // TASK 	: Html
-// ACTION 	: Create a Zip file for each folder in the OUTPUT folder
+// ACTION 	: Optimise and squish the html files
 //
 ///////////////////////////////////////////////////////////////////////////////////
-
 gulp.task('html', function(){
 	
 	var htmlmin = require('gulp-htmlmin');			// squish html
@@ -268,8 +275,6 @@ gulp.task('html', function(){
 		var inputFolder 	= path.join( SOURCE_FOLDER, folder, source.html ),
 			outputFolder 	= path.join( BUILD_FOLDER, folder, "/" );
 	
-		console.error( inputFolder, outputFolder );
-			
 		// now we are in each folder!
 		return gulp.src( inputFolder )
 				.pipe( htmlmin( config.html ) )
@@ -289,17 +294,18 @@ gulp.task('zip', function (cb) {
 
 	// show an error if they have not been built
 	var builds = getFolders( BUILD_FOLDER );
-	
-	if ( builds.length < 1 )
-	{
-		console.error( 'ERROR : Cannot find any folders in '+BUILD_FOLDER+' to build' );
-		console.error( 'ERROR : Perhaps you have forgotten to "gulp build" your project first?' );
-	}
-	
 	var zip = require('gulp-zip');					// zip files
 	var filesize = require('gulp-size');  			// measure the size of the project (useful if a limit is set!)
 	var merged = merge();
 
+	// Nothing to Zip!
+	if ( builds.length < 1 )
+	{
+		console.error( 'ERROR : Cannot find any folders in '+BUILD_FOLDER+' to build' );
+		console.error( 'ERROR : Perhaps you have forgotten to "gulp build" your project first?' );
+		return merged;
+	}
+	
 	// Loop through each folder in output and zip...
 	var streams = builds.map(function(folder){
 		
@@ -318,25 +324,11 @@ gulp.task('zip', function (cb) {
 	return merged;
 });
 
+// ================================================================================
+
 ///////////////////////////////////////////////////////////////////////////////////
-// COMPOSITE TASKS =====================================================
+// Compile all assets & squish but no cleaning or zipping
 ///////////////////////////////////////////////////////////////////////////////////
-
-/*
-
-All Available Tasks :
-	
-	scripts
-	css
-	html
-	fonts
-	images
-	
-	zip
-
-*/
-
-// compile all assets & squish
 gulp.task('build', function(callback) {
 	sequencer(
 		[ 'html', 'images', 'scripts', 'fonts' ],
@@ -344,16 +336,13 @@ gulp.task('build', function(callback) {
     callback);
 });
 
-// The task to create the minified versions
-gulp.task('compile', function(callback) {
+///////////////////////////////////////////////////////////////////////////////////
+// The default task (called when you run 'gulp' from cli)
+///////////////////////////////////////////////////////////////////////////////////
+gulp.task('default', function(callback) {
 	sequencer(
 		'clean',
 		'build',
 		'zip',
     callback);
 });
-
-///////////////////////////////////////////////////////////////////////////////////
-// The default task (called when you run 'gulp' from cli)
-///////////////////////////////////////////////////////////////////////////////////
-gulp.task('default', ['compile'] );

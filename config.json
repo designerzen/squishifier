@@ -1,0 +1,20 @@
+{
+	"images" : {
+		"optimizationLevel"				: 3,
+		"progressive"					: false,
+		"interlaced" 					: false
+	},
+
+	"html" : {
+		"removeComments"     			: true,
+		"removeIgnored"					: true,
+		"removeEmptyElements"			: false,
+		"removeOptionalTags"			: false,
+		"removeEmptyAttributes"			: true,
+		"removeRedundantAttributes"		: true,
+		"removeOptionalTags"			: true,
+		"collapseWhitespace" 			: true,
+		"minifyJS"          			: true,
+		"keepClosingSlash"   			: true
+	}
+}

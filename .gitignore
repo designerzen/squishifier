@@ -1,0 +1,9 @@
+node_modules
+input
+output
+.git
+.tmp
+.config.json
+Thumbs.db
+bower_components
+*.DS_Store

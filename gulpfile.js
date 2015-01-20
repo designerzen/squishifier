@@ -230,8 +230,6 @@ gulp.task('fonts', function(){
 // ACTION 	: Compress and concantenate our Javascript files into one file
 //
 ///////////////////////////////////////////////////////////////////////////////////
-
-// Test the build and zip it up
 gulp.task('scripts', function(){
 	
 	var uglify = require('gulp-uglify');            // squash files

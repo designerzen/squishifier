@@ -1,6 +1,17 @@
 {
 	/* 
 	
+	If you want a specific prefix to your output zips, set it here
+	
+	*/
+	
+	"zip" : {
+		"prefix"						: "0.1-",
+		"suffix"						: "brand"
+	},
+	
+	/* 
+	
 	How much to squish images by :
 		
 	The optimization level 0 enables a set of optimization operations that require minimal effort. 
@@ -48,5 +59,14 @@
 		collapseWhitespace 			: true,
 		minifyJS          			: true,
 		keepClosingSlash   			: true
+	},
+	
+	
+	"js" : {
+		"mangle"						: true,
+		"compress"						: true,
+		"beautify"						: false,
+		// false / 'all' / 'some'
+		"preserveComments"				: false
 	}
 }

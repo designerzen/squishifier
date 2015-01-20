@@ -32,6 +32,8 @@ var source =
 {
 	// JavaScripts
 	scripts :'**/**/**/*.js',
+	// Manifests
+	manifests :'**/manifest.js',
 	// Cascading Style Sheets
 	styles 	: '**/**/**/*.css',
 	// Html / xHtml
@@ -235,6 +237,27 @@ gulp.task('fonts', function(){
 	return es.concat.apply(null, streams);
 });
 
+///////////////////////////////////////////////////////////////////////////////////
+//
+// TASK 	: Copy Manifest without zipping as they are JSON files!
+// ACTION 	: Makes duplicates of specified files in the destination folders
+//
+///////////////////////////////////////////////////////////////////////////////////
+gulp.task('manifests', function(){
+	
+	var streams = folders.map(function(folder){
+
+		var inputFolder 	= path.join( SOURCE_FOLDER, folder, source.manifests ),
+			outputFolder 	= path.join( BUILD_FOLDER, folder );
+	
+		// now we are in each folder!
+		return gulp.src( inputFolder )
+			.pipe( gulp.dest( outputFolder ) );
+	});
+
+	return es.concat.apply(null, streams);
+});
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 //
@@ -258,7 +281,7 @@ gulp.task('scripts', function(){
 				.pipe( jshint('.jshintrc'))
 				.pipe( jshint.reporter('default') )
 				.pipe( stripDebug() )
-				.pipe( uglify() )
+				.pipe( uglify( config.js ) )
 				.pipe( gulp.dest(outputFolder) );
 	});
 
@@ -297,25 +320,28 @@ gulp.task('html', function(){
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('zip', function (cb) {
 
-	// show an error if they have not been built
-	var builds = getFolders( BUILD_FOLDER );
-	var zip = require('gulp-zip');					// zip files
-	var filesize = require('gulp-size');  			// measure the size of the project (useful if a limit is set!)
-	var merged = merge();
-
+	var builds 			= getFolders( BUILD_FOLDER );
+	var zip 			= require('gulp-zip');				// zip files
+	var filesize 		= require('gulp-size');  			// measure the size of the project (useful if a limit is set!)
+	var merged 			= merge();
+	var prefix 			= config.zip.prefix || '';
+	var suffix 			= config.zip.suffix || '';
+		
 	// Nothing to Zip!
 	if ( builds.length < 1 )
 	{
+		// show an error if they have not been built
 		console.error( 'ERROR : Cannot find any folders in '+BUILD_FOLDER+' to build' );
 		console.error( 'ERROR : Perhaps you have forgotten to "gulp build" your project first?' );
 		return merged;
+	}else{
+		console.log( 'prefix ' + prefix );
 	}
 	
 	// Loop through each folder in output and zip...
 	var streams = builds.map(function(folder){
 		
-		// output filename
-		var fileName 		= sanitiseFileName( folder, ".zip" );
+		var fileName 		= sanitiseFileName( prefix + folder + suffix, ".zip" );	// output filename
 		var inputFolder 	= path.join( BUILD_FOLDER, folder, '**/*' );
 		
 		var zipper = gulp.src( inputFolder )
@@ -337,7 +363,7 @@ gulp.task('zip', function (cb) {
 gulp.task('build', function(callback) {
 	sequencer(
 		[ 'html', 'images', 'scripts', 'fonts' ],
-		'css',
+		'css','manifests',
     callback);
 });
 

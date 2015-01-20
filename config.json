@@ -1,4 +1,10 @@
 {
+	
+	"zip" : {
+		"prefix"						: "BA-",
+		"suffix"						: "-v2"
+	},
+	
 	"images" : {
 		"optimizationLevel"				: 3,
 		"progressive"					: false,
@@ -20,5 +26,12 @@
 		"collapseWhitespace" 			: true,
 		"minifyJS"          			: true,
 		"keepClosingSlash"   			: true
+	},
+	
+	"js" : {
+		"mangle"						: true,
+		"compress"						: true,
+		"beautify"						: false,
+		"preserveComments"				: false
 	}
 }

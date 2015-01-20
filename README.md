@@ -44,6 +44,9 @@ output/webproject.zip
 ```
 
 ##Advanced##
+Check out the **config.json** file for a variety of _advanced options_ that you can set to alter the behaviour of your app.
+For documentation for the config file, please check out the **config.json.txt file**.
+
 There are a number of indivual tasks that can help you to test compile faster.
 NB. These are all run if you run just gulp on its own.
 

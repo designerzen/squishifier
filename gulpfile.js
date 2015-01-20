@@ -126,6 +126,7 @@ if(!fs.existsSync( BUILD_FOLDER ))
     });   
 }
 console.log( 'Reading ' + folders.length + ' Folders : ' + folders );
+console.log( 'Removing Redundant CSS ? ' + config.css.removeRedundantRules );
 	
 
 // =======================---------------- TASK DEFINITIONS --------------------
@@ -197,9 +198,13 @@ gulp.task('css', function(){
 			// Check to see if the CSS actually has changed since last compile 
 			.pipe( newer( outputFolder ) )
 			// Remove unused CSS that is not referenced in index.html
-			.pipe( uncss({
-				html: [ outputFolder +'/index.html' ]
-			}) )
+			.pipe( 
+				gulpif( config.css.removeRedundantRules, uncss(
+					{
+						html: [ outputFolder +'/index.html' ]
+					}
+				))
+			)
 			.pipe( prefixer() )
             .pipe( gulp.dest( outputFolder ) );
 	});

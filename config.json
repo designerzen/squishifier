@@ -4,7 +4,11 @@
 		"progressive"					: false,
 		"interlaced" 					: false
 	},
-
+	
+	"css":{
+		"removeRedundantRules"			: false
+	},
+	
 	"html" : {
 		"removeComments"     			: true,
 		"removeIgnored"					: true,

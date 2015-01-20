@@ -29,7 +29,12 @@
 		// Interlace gif for progressive rendering.
 		interlaced : false
 	},
-
+	
+	// Try to remove redundant css rules?
+	"css":{
+		"removeRedundantRules"			: true
+	},
+	
 	// How much to squish HTML
 	// All options : https://github.com/kangax/html-minifier
 	htmlSquishOptions = {

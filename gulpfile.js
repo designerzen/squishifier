@@ -26,6 +26,7 @@ All Available Tasks :
 
 var SOURCE_FOLDER 			= 'input/';			// Where the Source folder lives
 var BUILD_FOLDER 			= 'output/';		// Where the build results
+var CONFIG_NAME 			= 'config.json';		// Where the build results
 
 // Where do our source files live?
 var source = 
@@ -41,27 +42,7 @@ var source =
 	// Image Files
 	images	: '**/**/**/*.+(png|jpg|jpeg|gif|webp|svg)',
 	// Fonts 
-	fonts	: '**/**/**/*.+(svg|eot|woff|ttf|otf)'
-};
-
-// Where shall we compile them to?
-var structure = {
-	scripts : '',
-	styles 	: '',
-	html 	: '',
-	images	: '',
-	fonts	: ''
-};
-
-// Where shall we compile them to?
-var getDestinations = function( dir ) {
-	return {
-		scripts : dir + structure.scripts,
-		styles 	: dir + structure.styles,
-		html 	: dir + structure.html,
-		images	: dir + structure.images,
-		fonts	: dir + structure.fonts
-	};
+	fonts	: '**/**/**/*.+(svg|eot|woff|woff2|ttf|otf)'
 };
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +63,15 @@ var sanitiseFileName = function( fileName, suffix ){
 	return name.toLowerCase();
 };
 
+// Make a directory if needed...
+var mkdir = function (path)
+{
+    try {
+        fs.mkdirSync(path);
+    } catch(e) {
+        if ( e.code != 'EEXIST' ) throw e;
+    }
+};
 ///////////////////////////////////////////////////////////////////////////////////
 // Fetch all folder names in DIR
 ///////////////////////////////////////////////////////////////////////////////////
@@ -91,45 +81,56 @@ var getFolders = function (dir){
 				return fs.statSync(path.join(dir, file)).isDirectory();
 			});
 }
+
+// =======================---------------- CONFIG TESTS --------------------
+
+// Initial Tests
+var fs = require('fs');							// read inside files
+
+// Config
+var fileName = "./"+CONFIG_NAME;				// file to read
+
+// Check to see if the file exists and if NOT, throw an error
+if ( !fs.existsSync( fileName ) ) 
+{
+	// FAIL : There is NO Config file!
+	console.error( "No Config Found at "+fileName );
+	console.error( "This file is neccessary and we cannot contiue without it!" );
+	console.error( "Solution : Recreate the "+fileName+" file");
+	console.error( "	or redownload the zip file and start afresh");
+	return false;
+}
+
+// Recreate the output folder if it currently does not exist
+mkdir( BUILD_FOLDER );
+
 // =======================---------------- IMPORT DEPENDENCIES --------------------
 
 // Requirements for this build to work :
-var config = require('./config.json');			// config file!
-var gulp = require('gulp');						// gulp!
-var fs = require('fs');							// read inside files
-var del = require('del');						// delete things and folders
-var path = require('path');						// path creating utilities
-var es = require('event-stream');				// combine streams
-var gulpif = require('gulp-if');				// conditional compiles
-var newer = require('gulp-newer');				// deal with only modified files
-var replace = require('gulp-replace');			// replace content within files
-var rename = require('gulp-rename');			// rename files
-var expect = require('gulp-expect-file');		// expect a certain file (more for debugging)
-var sequencer = require('run-sequence');		// run synchronously
-var console = require('better-console');		// sexy console output
-var merge = require('merge-stream');			// combine multiple streams!
+var gulp = require('gulp');							// gulp!
+var del = require('del');							// delete things and folders
+var path = require('path');							// path creating utilities
+var es = require('event-stream');					// combine streams
+var gulpif = require('gulp-if');					// conditional compiles
+var newer = require('gulp-newer');					// deal with only modified files
+var replace = require('gulp-replace');				// replace content within files
+var rename = require('gulp-rename');				// rename files
+var expect = require('gulp-expect-file');			// expect a certain file (more for debugging)
+var sequencer = require('run-sequence');			// run synchronously
+var merge = require('merge-stream');				// combine multiple streams!
 
+// JSON
+var stripJson = require('strip-json-comments');		// strip out useless stuff
+var jsonminify = require('gulp-jsonminify');		// and condense whitespace
 
-// Where shall we compile them to?
+// Config
+var options = fs.readFileSync(fileName, 'utf-8');	// use fs to load in the options with comments
+var config = JSON.parse( stripJson( options ) );	// OUTPUT Config
+var variants = config.variations;					// Shortcuts to parameters
+
+// Fetch the source directories
 var folders = getFolders( SOURCE_FOLDER );
-var destination = getDestinations( BUILD_FOLDER );
 
-
-
-// Create build folder if it does not exist...
-if(!fs.existsSync( BUILD_FOLDER ))
-{
-    fs.mkdirSync( BUILD_FOLDER, 0766, function(err){
-		if(err)
-		{ 
-			console.error(err);
-			response.send("ERROR! Can't make the directory! \n");    // echo the result back
-		}
-    });   
-}
-console.log( 'Reading ' + folders.length + ' Folders : ' + folders );
-console.log( 'Removing Redundant CSS ? ' + config.css.removeRedundantRules );
-	
 
 // =======================---------------- TASK DEFINITIONS --------------------
 
@@ -141,9 +142,7 @@ console.log( 'Removing Redundant CSS ? ' + config.css.removeRedundantRules );
 //
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('clean', function(cb) {
-	// You can use multiple globbing patterns as you would with `gulp.src`
 	del([BUILD_FOLDER], cb);
-	
 });
 
 
@@ -252,6 +251,7 @@ gulp.task('manifests', function(){
 	
 		// now we are in each folder!
 		return gulp.src( inputFolder )
+			.pipe( jsonminify() )
 			.pipe( gulp.dest( outputFolder ) );
 	});
 
@@ -320,36 +320,57 @@ gulp.task('html', function(){
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('zip', function (cb) {
 
-	var builds 			= getFolders( BUILD_FOLDER );
+	var builds 			= folders;//getFolders( BUILD_FOLDER );
 	var zip 			= require('gulp-zip');				// zip files
 	var filesize 		= require('gulp-size');  			// measure the size of the project (useful if a limit is set!)
 	var merged 			= merge();
+	
 	var prefix 			= config.zip.prefix || '';
 	var suffix 			= config.zip.suffix || '';
-		
+	
+	console.log( 'COMPILE : ' + folders.length + ' Folders : ' , folders );
+	
 	// Nothing to Zip!
 	if ( builds.length < 1 )
 	{
 		// show an error if they have not been built
-		console.error( 'ERROR : Cannot find any folders in '+BUILD_FOLDER+' to build' );
-		console.error( 'ERROR : Perhaps you have forgotten to "gulp build" your project first?' );
+		console.error( 'ERROR : Cannot find any folders in '+SOURCE_FOLDER+'' );
+		console.error( 'ERROR : Copy your working folder into this folder and re-run' );
+		console.error( 'ERROR : Alternatively, perhaps you have forgotten to "gulp build" your project first?' );
 		return merged;
 	}else{
 		console.log( 'prefix ' + prefix );
 	}
 	
+	// Variations of the theme
+	if ( variants.length < 1 )
+	{
+		console.log( 'No variations to create' );
+	}else{
+		console.log( 'You have '+variants.length + ' variation(s) ' , variants );
+	}
+	
 	// Loop through each folder in output and zip...
-	var streams = builds.map(function(folder){
+	variants.map( function(variant, v){
+	
+		console.log( v+'. Variant to ' + variant );
 		
-		var fileName 		= sanitiseFileName( prefix + folder + suffix, ".zip" );	// output filename
-		var inputFolder 	= path.join( BUILD_FOLDER, folder, '**/*' );
-		
-		var zipper = gulp.src( inputFolder )
-					.pipe( zip(fileName) )
-					.pipe( filesize( {title:fileName, showFiles:false } ) )
-					.pipe( gulp.dest( BUILD_FOLDER ) );
-				
-		merged.add( zipper );
+		// var streams = 
+		builds.map( function(folder,index){
+			
+			var fileName 		= sanitiseFileName( prefix + folder + suffix + variant, ".zip" );	// output filename
+			var inputFolder 	= path.join( SOURCE_FOLDER, folder, '**/*' );
+			
+			console.log( index+'. Building from '+inputFolder+' to ' + fileName );
+			
+			var zipper = gulp.src( inputFolder )
+						.pipe( zip(fileName) )
+						.pipe( filesize( {title:fileName, showFiles:false } ) )
+						.pipe( gulp.dest( BUILD_FOLDER ) );
+					
+			merged.add( zipper );
+		});
+			
 	});
 	
 	return merged;
@@ -377,3 +398,6 @@ gulp.task('default', function(callback) {
 		'zip',
     callback);
 });
+
+
+//console.log( 'Removing Redundant CSS ? ' + config.css.removeRedundantRules );

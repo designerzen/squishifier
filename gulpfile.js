@@ -13,13 +13,13 @@ This handles the compilation of these elements :
 
 
 All Available Tasks :
-	
+
 	scripts
 	css
 	html
 	fonts
 	images
-	
+
 	zip
 
 */
@@ -29,7 +29,7 @@ var BUILD_FOLDER 			= 'output/';		// Where the build results
 var CONFIG_NAME 			= 'config.json';		// Where the build results
 
 // Where do our source files live?
-var source = 
+var source =
 {
 	// JavaScripts
 	scripts :'**/**/**/*.js',
@@ -41,7 +41,7 @@ var source =
 	html 	: '**/**/**/*.html',
 	// Image Files
 	images	: '**/**/**/*.+(png|jpg|jpeg|gif|webp|svg)',
-	// Fonts 
+	// Fonts
 	fonts	: '**/**/**/*.+(svg|eot|woff|woff2|ttf|otf)'
 };
 
@@ -60,6 +60,9 @@ var sanitiseFileName = function( fileName, suffix ){
 	name = name.replace(/[\u2000-\u206F\u2E00-\u2E7F\\'!"#\$%&\(\)\*\+,\/:;<=>\?@\[\]\^_`\{\|\}~]/g, "_");
 	// make sure we have a suffix if needed
 	if (suffix) name += suffix;
+
+	return name;
+	// edit!
 	return name.toLowerCase();
 };
 
@@ -91,7 +94,7 @@ var fs = require('fs');							// read inside files
 var fileName = "./"+CONFIG_NAME;				// file to read
 
 // Check to see if the file exists and if NOT, throw an error
-if ( !fs.existsSync( fileName ) ) 
+if ( !fs.existsSync( fileName ) )
 {
 	// FAIL : There is NO Config file!
 	console.error( "No Config Found at "+fileName );
@@ -153,17 +156,17 @@ gulp.task('clean', function(cb) {
 //
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('images', function(){
-	
+
 	// Image Plugins
 	var imagemin = require('gulp-imagemin');		// squish images
 	var pngquant = require('imagemin-pngquant');	// png squisher
 	var jpegoptim = require('imagemin-jpegoptim');	// jpg squisher ( with file size imiter :) )
 
 	var streams = folders.map(function(folder){
-		
+
 		var inputFolder 	= path.join( SOURCE_FOLDER, folder, source.images ),
 			outputFolder 	= path.join( BUILD_FOLDER, folder );
-	
+
 		// now we are in each folder!
 		return gulp.src( inputFolder )
 			.pipe( newer( outputFolder ) )
@@ -181,7 +184,7 @@ gulp.task('images', function(){
 //
 // TASK 	: CSS
 // ACTION 	: Compiles a single Less files specified into a single CSS file
-//		
+//
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('css', function(){
 	// CSS Plugins
@@ -189,17 +192,17 @@ gulp.task('css', function(){
 	var uncss = require('gulp-uncss');				// remove unused css
 
 	var streams = folders.map(function(folder){
-		
+
 		var sourceFolder 	= path.join( SOURCE_FOLDER, folder ),
 			inputFolder 	= path.join( SOURCE_FOLDER, folder, source.styles ),
 			outputFolder 	= path.join( BUILD_FOLDER, folder );
-	
+
 		// now we are in each folder!
 		return gulp.src( inputFolder )
-			// Check to see if the CSS actually has changed since last compile 
+			// Check to see if the CSS actually has changed since last compile
 			.pipe( newer( outputFolder ) )
 			// Remove unused CSS that is not referenced in index.html
-			.pipe( 
+			.pipe(
 				gulpif( config.css.removeRedundantRules, uncss(
 					{
 						html: [ outputFolder +'/index.html' ]
@@ -221,12 +224,12 @@ gulp.task('css', function(){
 //
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('fonts', function(){
-	
+
 	var streams = folders.map(function(folder){
 
 		var inputFolder 	= path.join( SOURCE_FOLDER, folder, source.fonts ),
 			outputFolder 	= path.join( BUILD_FOLDER, folder );
-	
+
 		// now we are in each folder!
 		return gulp.src( inputFolder )
 			.pipe( newer( outputFolder ) )
@@ -243,12 +246,12 @@ gulp.task('fonts', function(){
 //
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('manifests', function(){
-	
+
 	var streams = folders.map(function(folder){
 
 		var inputFolder 	= path.join( SOURCE_FOLDER, folder, source.manifests ),
 			outputFolder 	= path.join( BUILD_FOLDER, folder );
-	
+
 		// now we are in each folder!
 		return gulp.src( inputFolder )
 			.pipe( jsonminify() )
@@ -266,16 +269,16 @@ gulp.task('manifests', function(){
 //
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('scripts', function(){
-	
+
 	var uglify = require('gulp-uglify');            // squash files
 	var jshint = require('gulp-jshint');			// lint!
 	var stripDebug = require('gulp-strip-debug');	// strip out all calls to console!
-	
+
 	var streams = folders.map(function(folder){
-		
+
 		var inputFolder 	= path.join( SOURCE_FOLDER, folder, source.scripts ),
 			outputFolder 	= path.join( BUILD_FOLDER, folder );
-	
+
 		// now we are in each folder!
 		return gulp.src( inputFolder )
 				.pipe( jshint('.jshintrc'))
@@ -296,13 +299,13 @@ gulp.task('scripts', function(){
 //
 ///////////////////////////////////////////////////////////////////////////////////
 gulp.task('html', function(){
-	
+
 	var htmlmin = require('gulp-htmlmin');			// squish html
 	var streams = folders.map(function(folder){
-		
+
 		var inputFolder 	= path.join( SOURCE_FOLDER, folder, source.html ),
 			outputFolder 	= path.join( BUILD_FOLDER, folder, "/" );
-	
+
 		// now we are in each folder!
 		return gulp.src( inputFolder )
 				.pipe( htmlmin( config.html ) )
@@ -324,12 +327,12 @@ gulp.task('zip', function (cb) {
 	var zip 			= require('gulp-zip');				// zip files
 	var filesize 		= require('gulp-size');  			// measure the size of the project (useful if a limit is set!)
 	var merged 			= merge();
-	
+
 	var prefix 			= config.zip.prefix || '';
 	var suffix 			= config.zip.suffix || '';
-	
+
 	console.log( 'COMPILE : ' + folders.length + ' Folders : ' , folders );
-	
+
 	// Nothing to Zip!
 	if ( builds.length < 1 )
 	{
@@ -341,38 +344,51 @@ gulp.task('zip', function (cb) {
 	}else{
 		console.log( 'prefix ' + prefix );
 	}
-	
+
 	// Variations of the theme
 	if ( variants.length < 1 )
 	{
 		console.log( 'No variations to create' );
 	}else{
-		console.log( 'You have '+variants.length + ' variation(s) ' , variants );
+		console.log( 'Zipping '+variants.length + ' variation(s) ' , variants );
 	}
-	
+
 	// Loop through each folder in output and zip...
 	variants.map( function(variant, v){
-	
+
 		console.log( v+'. Variant to ' + variant );
-		
-		// var streams = 
+
+		// var streams =
 		builds.map( function(folder,index){
-			
-			var fileName 		= sanitiseFileName( prefix + folder + suffix + variant, ".zip" );	// output filename
+
+			// start with an empty name
+			var name = '';
+
+			// add the prefix and the folder sub category
+			name += prefix + folder + suffix;
+
+			// add the variant after a seperator if it has an extension
+			if (variant.length) name += config.seperator + variant;
+			// add the extension without an extension
+			else name += variant;
+
+			// this is the file name that the zip will saved under
+			var fileName 		= sanitiseFileName( name, ".zip" );	// output filename
 			var inputFolder 	= path.join( SOURCE_FOLDER, folder, '**/*' );
-			
+
 			console.log( index+'. Building from '+inputFolder+' to ' + fileName );
-			
+
+			// Make a zip and print out the file size
 			var zipper = gulp.src( inputFolder )
 						.pipe( zip(fileName) )
 						.pipe( filesize( {title:fileName, showFiles:false } ) )
 						.pipe( gulp.dest( BUILD_FOLDER ) );
-					
+
 			merged.add( zipper );
 		});
-			
+
 	});
-	
+
 	return merged;
 });
 

@@ -1,32 +1,43 @@
 {
 	/*
-	
+
 	Sometimes you want to make multiple zip files from one folder...
 	If that is the case, add your variations here in the array
-	
+
 	*/
 	"variations" : [
-		"poo"
+		"Captify",
+		"Captify_abz",
+		"Captify_brs",
+		"DataXu",
+		"DataXu_Prospecting_ABZ",
+		"DataXu_Prospecting_BRS",
+		"Retargeting",
+		"Retargeting_Opodo",
+		"Skyscanner",
+		""
 	],
-	
+
+	"seperator":"_",
+
 	/*
-	
+
 	If you want a specific prefix to your output zips, set it here
-	
+
 	*/
 	"zip" : {
 		"prefix"						: "",
 		"suffix"						: ""
 	},
-	
-	/* 
-	
+
+	/*
+
 	How much to squish images by :
-		
-	The optimization level 0 enables a set of optimization operations that require minimal effort. 
-	There will be no changes to image attributes like bit depth or color type, and no recompression of existing IDAT datastreams. 
-	The optimization level 1 enables a single IDAT compression trial. 
-	The trial chosen is what. OptiPNG thinks it’s probably the most effective. 
+
+	The optimization level 0 enables a set of optimization operations that require minimal effort.
+	There will be no changes to image attributes like bit depth or color type, and no recompression of existing IDAT datastreams.
+	The optimization level 1 enables a single IDAT compression trial.
+	The trial chosen is what. OptiPNG thinks it’s probably the most effective.
 	The optimization levels 2 and higher enable multiple IDAT compression trials; the higher the level, the more trials.
 
 	Level and trials:
@@ -67,11 +78,11 @@
 		"minifyJS"          			: true,
 		"keepClosingSlash"   			: true
 	},
-	
+
 	/*
-	
+
 	How much Javscript wrangling is acceptable?
-	
+
 	  --source-map                  Specify an output file where to generate source
 									map.
 	  --source-map-root             The path to the original source to be included
